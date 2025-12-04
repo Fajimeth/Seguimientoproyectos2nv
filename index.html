@@ -3,258 +3,228 @@
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard de Gestión de Proyectos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- TailwindCSS CDN -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React + ReactDOM + Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Recharts UMD -->
+  <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-900">
-  <div class="min-h-screen max-w-7xl mx-auto px-6 py-8">
-    <!-- Header -->
-    <header class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">
-          Dashboard de Gestión de Proyectos
-        </h1>
-        <p class="text-sm text-slate-500">
-          Visibilidad completa de todos los proyectos, sesiones y asignaciones.
-        </p>
-      </div>
-      <button
-        class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-700 transition">
-        <span>+ Nuevo Proyecto</span>
-      </button>
-    </header>
+<body class="bg-gray-100">
+  <div id="root"></div>
 
-    <!-- Tabs -->
-    <nav class="flex flex-wrap gap-4 border-b border-slate-200 pb-3 mb-6 text-sm">
-      <button class="border-b-2 border-indigo-500 text-indigo-600 pb-2 font-semibold">
-        Visibilidad General
-      </button>
-      <button class="text-slate-500 hover:text-slate-700">Proyectos Detallados</button>
-      <button class="text-slate-500 hover:text-slate-700">Sesiones de Seguimiento</button>
-      <button class="text-slate-500 hover:text-slate-700">Asignaciones y Planeación</button>
-      <button class="text-slate-500 hover:text-slate-700">Dashboards Analíticos</button>
-      <button class="text-slate-500 hover:text-slate-700">Diagrama de Gantt</button>
-    </nav>
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect } = React;
+    const {
+      BarChart: RechartsBarChart,
+      Bar,
+      XAxis,
+      YAxis,
+      CartesianGrid,
+      Tooltip,
+      Legend,
+      ResponsiveContainer,
+      LineChart,
+      Line,
+      PieChart: RechartsPieChart,
+      Pie,
+      Cell
+    } = Recharts;
 
-    <!-- Metric cards -->
-    <section class="grid gap-4 md:grid-cols-4 mb-8">
-      <!-- Capacidad del equipo -->
-      <div class="rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-500 p-5 text-white shadow">
-        <p class="text-xs uppercase tracking-wide text-indigo-100">Capacidad del Equipo</p>
-        <p class="mt-3 text-3xl font-semibold">58.3%</p>
-        <p class="mt-1 text-xs text-indigo-100">
-          Horas disponibles vs. asignadas
-        </p>
-      </div>
+    /* ==== ÍCONOS SIMPLE (EMOJIS) PARA REEMPLAZAR lucide-react ==== */
+    const Calendar = (props) => <span {...props}>📅</span>;
+    const Users = (props) => <span {...props}>👥</span>;
+    const FileText = (props) => <span {...props}>📄</span>;
+    const Clock = (props) => <span {...props}>⏰</span>;
+    const AlertTriangle = (props) => <span {...props}>⚠️</span>;
+    const CheckCircle = (props) => <span {...props}>✅</span>;
+    const BarChart2 = (props) => <span {...props}>📊</span>;
+    const MessageSquare = (props) => <span {...props}>💬</span>;
+    const Target = (props) => <span {...props}>🎯</span>;
+    const BookOpen = (props) => <span {...props}>📖</span>;
+    const Settings = (props) => <span {...props}>⚙️</span>;
+    const Plus = (props) => <span {...props}>➕</span>;
+    const Edit = (props) => <span {...props}>✏️</span>;
+    const Trash2 = (props) => <span {...props}>🗑️</span>;
+    const Eye = (props) => <span {...props}>👁️</span>;
+    const Download = (props) => <span {...props}>⬇️</span>;
+    const Share2 = (props) => <span {...props}>📤</span>;
+    const X = (props) => <span {...props}>✖️</span>;
+    const User = (props) => <span {...props}>👤</span>;
+    const Briefcase = (props) => <span {...props}>💼</span>;
+    const Grid = (props) => <span {...props}>🔳</span>;
+    const List = (props) => <span {...props}>📋</span>;
+    const GanttChart = (props) => <span {...props}>📈</span>;
+    const ClipboardList = (props) => <span {...props}>📑</span>;
+    const CheckSquare = (props) => <span {...props}>☑️</span>;
+    const TrendingUp = (props) => <span {...props}>📈</span>;
+    const PieChart = (props) => <span {...props}>🥧</span>;
+    const Layers = (props) => <span {...props}>🧩</span>;
+    const Activity = (props) => <span {...props}>📉</span>;
 
-      <!-- Avance promedio -->
-      <div class="rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 p-5 text-white shadow">
-        <p class="text-xs uppercase tracking-wide text-emerald-100">Avance Promedio</p>
-        <p class="mt-3 text-3xl font-semibold">43%</p>
-        <p class="mt-1 text-xs text-emerald-100">
-          Progreso global de los proyectos
-        </p>
-      </div>
+    /* ======================= APP ======================= */
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('overview');
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [showAddProject, setShowAddProject] = useState(false);
+      const [editingProject, setEditingProject] = useState(null);
+      const [editingSession, setEditingSession] = useState(null);
+      const [showAddSession, setShowAddSession] = useState(false);
+      const [assignmentsView, setAssignmentsView] = useState('grid');
+      const [selectedMember, setSelectedMember] = useState(null);
+      const [showAddTask, setShowAddTask] = useState(false);
+      const [editingTask, setEditingTask] = useState(null);
+      
+      const [projects, setProjects] = useState([
+        {
+          id: 1,
+          name: 'Proyecto Efecty',
+          client: 'Efecty',
+          status: 'En Progreso',
+          progress: 65,
+          plannedProgress: 70,
+          stoppers: ['Revisión de documentos', 'Aprobación de presupuesto'],
+          teamCapacity: '70%',
+          deliveryDate: '2025-03-15',
+          commitments: ['Entrega de prototipo', 'Pruebas de usuario'],
+          weeklyReport: 'Avance en desarrollo frontend. Pruebas unitarias completadas.',
+          challenges: ['Integración con API externa', 'Recursos limitados'],
+          startDate: '2024-12-01',
+          endDate: '2025-03-15',
+          tasks: [
+            { id: 1, name: 'Análisis de requisitos', start: '2024-12-01', end: '2024-12-15', progress: 100, plannedProgress: 100, status: 'Completado' },
+            { id: 2, name: 'Diseño UX/UI', start: '2024-12-10', end: '2025-01-10', progress: 80, plannedProgress: 85, status: 'En Progreso' },
+            { id: 3, name: 'Desarrollo frontend', start: '2025-01-05', end: '2025-02-15', progress: 60, plannedProgress: 65, status: 'En Progreso' },
+            { id: 4, name: 'Desarrollo backend', start: '2025-01-10', end: '2025-02-20', progress: 40, plannedProgress: 50, status: 'En Progreso' },
+            { id: 5, name: 'Pruebas y QA', start: '2025-02-15', end: '2025-03-05', progress: 0, plannedProgress: 10, status: 'Pendiente' },
+            { id: 6, name: 'Entrega final', start: '2025-03-05', end: '2025-03-15', progress: 0, plannedProgress: 0, status: 'Pendiente' }
+          ],
+          color: 'from-blue-500 to-indigo-600'
+        },
+        {
+          id: 2,
+          name: 'Proyecto Aseguradora Solidaria',
+          client: 'Aseguradora Solidaria',
+          status: 'Planeación',
+          progress: 20,
+          plannedProgress: 25,
+          stoppers: ['Definición de requisitos', 'Asignación de recursos'],
+          teamCapacity: '45%',
+          deliveryDate: '2025-04-30',
+          commitments: ['Documentación técnica', 'Reunión con stakeholders'],
+          weeklyReport: 'Recolección de requerimientos. Diagramas de flujo en proceso.',
+          challenges: ['Alcance no definido', 'Coordinación entre equipos'],
+          startDate: '2024-12-15',
+          endDate: '2025-04-30',
+          tasks: [
+            { id: 1, name: 'Recopilación de requerimientos', start: '2024-12-15', end: '2025-01-15', progress: 30, plannedProgress: 35, status: 'En Progreso' },
+            { id: 2, name: 'Diseño de arquitectura', start: '2025-01-10', end: '2025-02-10', progress: 0, plannedProgress: 15, status: 'Pendiente' },
+            { id: 3, name: 'Desarrollo módulo 1', start: '2025-02-01', end: '2025-03-15', progress: 0, plannedProgress: 0, status: 'Pendiente' },
+            { id: 4, name: 'Desarrollo módulo 2', start: '2025-02-15', end: '2025-03-30', progress: 0, plannedProgress: 0, status: 'Pendiente' },
+            { id: 5, name: 'Integración y pruebas', start: '2025-03-20', end: '2025-04-20', progress: 0, plannedProgress: 0, status: 'Pendiente' },
+            { id: 6, name: 'Entrega y capacitación', start: '2025-04-20', end: '2025-04-30', progress: 0, plannedProgress: 0, status: 'Pendiente' }
+          ],
+          color: 'from-green-500 to-emerald-600'
+        },
+        {
+          id: 3,
+          name: 'Proyecto Digital Transformation',
+          client: 'TechCorp',
+          status: 'En Progreso',
+          progress: 45,
+          plannedProgress: 50,
+          stoppers: ['Aprobación de diseño', 'Recursos técnicos'],
+          teamCapacity: '60%',
+          deliveryDate: '2025-05-20',
+          commitments: ['Migración de datos', 'Capacitación del equipo'],
+          weeklyReport: 'Diseño finalizado. Inicio de desarrollo backend.',
+          challenges: ['Compatibilidad con sistemas legacy', 'Timeline ajustado'],
+          startDate: '2024-11-20',
+          endDate: '2025-05-20',
+          tasks: [
+            { id: 1, name: 'Análisis de sistemas', start: '2024-11-20', end: '2024-12-10', progress: 100, plannedProgress: 100, status: 'Completado' },
+            { id: 2, name: 'Diseño arquitectura', start: '2024-12-05', end: '2025-01-15', progress: 100, plannedProgress: 100, status: 'Completado' },
+            { id: 3, name: 'Desarrollo módulo core', start: '2025-01-15', end: '2025-03-15', progress: 30, plannedProgress: 40, status: 'En Progreso' },
+            { id: 4, name: 'Integración APIs', start: '2025-02-01', end: '2025-03-30', progress: 15, plannedProgress: 25, status: 'En Progreso' },
+            { id: 5, name: 'Migración de datos', start: '2025-03-15', end: '2025-04-30', progress: 0, plannedProgress: 5, status: 'Pendiente' },
+            { id: 6, name: 'Pruebas finales', start: '2025-04-20', end: '2025-05-15', progress: 0, plannedProgress: 0, status: 'Pendiente' }
+          ],
+          color: 'from-purple-500 to-pink-600'
+        }
+      ]);
 
-      <!-- Bloqueadores -->
-      <div class="rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 p-5 text-white shadow">
-        <p class="text-xs uppercase tracking-wide text-amber-100">Bloqueadores</p>
-        <p class="mt-3 text-3xl font-semibold">6</p>
-        <p class="mt-1 text-xs text-amber-100">
-          Riesgos y pendientes críticos
-        </p>
-      </div>
+      const [sessions, setSessions] = useState([
+        {
+          id: 1,
+          type: 'Internas',
+          frequency: 'Semanal',
+          purpose: 'Revisión de avances y bloqueadores',
+          nextDate: '2025-12-10',
+          participants: 'Equipo técnico',
+          duration: '1 hora'
+        },
+        {
+          id: 2,
+          type: 'Clientes',
+          frequency: 'Quincenal',
+          purpose: 'Actualización de estado del proyecto',
+          nextDate: '2025-12-18',
+          participants: 'Cliente + Gerente de proyecto',
+          duration: '45 minutos'
+        }
+      ]);
 
-      <!-- Miembros del equipo -->
-      <div class="rounded-2xl bg-gradient-to-r from-pink-500 to-fuchsia-500 p-5 text-white shadow">
-        <p class="text-xs uppercase tracking-wide text-pink-100">Miembros del Equipo</p>
-        <p class="mt-3 text-3xl font-semibold">5</p>
-        <p class="mt-1 text-xs text-pink-100">
-          Activos en los proyectos actuales
-        </p>
-      </div>
-    </section>
-
-    <!-- Resumen de Proyectos -->
-    <section class="mb-10">
-      <header class="mb-4 flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-semibold text-slate-900">Resumen de Proyectos</h2>
-          <p class="text-xs text-slate-500">
-            Visibilidad general de todos los proyectos activos.
-          </p>
-        </div>
-      </header>
-
-      <div class="grid gap-4 md:grid-cols-3">
-        <!-- Proyecto Efecty -->
-        <article class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5 flex flex-col gap-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-semibold text-slate-900">Proyecto Efecty</h3>
-              <p class="text-xs text-slate-500">Cliente: Efecty</p>
-            </div>
-            <span
-              class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-600">
-              En Progreso
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs">
-            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
-              65% completado
-            </span>
-            <span class="text-slate-400">|</span>
-            <span class="text-slate-500">
-              2024-12-01 – 2025-03-15
-            </span>
-          </div>
-
-          <div class="mt-2">
-            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
-              <span>Capacidad</span>
-              <span>70%</span>
-            </div>
-            <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div class="h-full w-[70%] bg-indigo-500 rounded-full"></div>
-            </div>
-          </div>
-
-          <div class="mt-3 flex gap-2 text-xs">
-            <button class="px-3 py-1 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">
-              Ver
-            </button>
-            <button class="px-3 py-1 rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
-              Editar
-            </button>
-            <button class="px-3 py-1 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100">
-              Eliminar
-            </button>
-          </div>
-        </article>
-
-        <!-- Proyecto Aseguradora Solidaria -->
-        <article class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5 flex flex-col gap-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-semibold text-slate-900">Proyecto Aseguradora Solidaria</h3>
-              <p class="text-xs text-slate-500">Cliente: Aseguradora Solidaria</p>
-            </div>
-            <span
-              class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600">
-              Planeación
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs">
-            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
-              20% completado
-            </span>
-            <span class="text-slate-400">|</span>
-            <span class="text-slate-500">
-              2024-12-15 – 2025-04-30
-            </span>
-          </div>
-
-          <div class="mt-2">
-            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
-              <span>Capacidad</span>
-              <span>45%</span>
-            </div>
-            <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div class="h-full w-[45%] bg-emerald-500 rounded-full"></div>
-            </div>
-          </div>
-
-          <div class="mt-3 flex gap-2 text-xs">
-            <button class="px-3 py-1 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">
-              Ver
-            </button>
-            <button class="px-3 py-1 rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
-              Editar
-            </button>
-            <button class="px-3 py-1 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100">
-              Eliminar
-            </button>
-          </div>
-        </article>
-
-        <!-- Proyecto Digital Transformation -->
-        <article class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5 flex flex-col gap-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-semibold text-slate-900">Proyecto Digital Transformation</h3>
-              <p class="text-xs text-slate-500">Cliente: TechCorp</p>
-            </div>
-            <span
-              class="inline-flex items-center rounded-full bg-violet-50 px-3 py-1 text-[11px] font-semibold text-violet-600">
-              En Progreso
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs">
-            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
-              45% completado
-            </span>
-            <span class="text-slate-400">|</span>
-            <span class="text-slate-500">
-              2024-11-20 – 2025-05-20
-            </span>
-          </div>
-
-          <div class="mt-2">
-            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
-              <span>Capacidad</span>
-              <span>60%</span>
-            </div>
-            <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
-              <div class="h-full w-[60%] bg-violet-500 rounded-full"></div>
-            </div>
-          </div>
-
-          <div class="mt-3 flex gap-2 text-xs">
-            <button class="px-3 py-1 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50">
-              Ver
-            </button>
-            <button class="px-3 py-1 rounded-full bg-indigo-600 text-white hover:bg-indigo-700">
-              Editar
-            </button>
-            <button class="px-3 py-1 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100">
-              Eliminar
-            </button>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Próximas Sesiones -->
-    <section class="mb-10">
-      <h2 class="text-lg font-semibold text-slate-900 mb-3">Próximas Sesiones</h2>
-      <div class="rounded-2xl bg-white shadow-sm border border-slate-100 p-5">
-        <p class="text-xs text-slate-500 mb-3">
-          Seguimiento programado para los próximos 30 días.
-        </p>
-        <div class="grid md:grid-cols-3 gap-4 text-xs">
-          <div class="border border-slate-100 rounded-xl p-3">
-            <p class="font-semibold text-slate-800">Revisión avance Efecty</p>
-            <p class="text-slate-500 mt-1">Fecha: 2024-12-10</p>
-            <p class="text-slate-500">Tipo: Sesión interna</p>
-          </div>
-          <div class="border border-slate-100 rounded-xl p-3">
-            <p class="font-semibold text-slate-800">Kickoff Aseguradora Solidaria</p>
-            <p class="text-slate-500 mt-1">Fecha: 2024-12-15</p>
-            <p class="text-slate-500">Tipo: Cliente</p>
-          </div>
-          <div class="border border-slate-100 rounded-xl p-3">
-            <p class="font-semibold text-slate-800">Comité Digital Transformation</p>
-            <p class="text-slate-500 mt-1">Fecha: 2024-12-18</p>
-            <p class="text-slate-500">Tipo: Comité Directivo</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-</body>
-</html>
+      const [teamMembers, setTeamMembers] = useState([
+        {
+          id: 1,
+          name: 'Carlos Rodríguez',
+          role: 'Desarrollador Frontend',
+          avatar: 'https://placehold.co/40x40/3b82f6/ffffff?text=CR',
+          projects: [
+            { projectId: 1, projectName: 'Proyecto Efecty', hours: 24, tasks: ['Desarrollo de interfaz', 'Pruebas unitarias'], status: 'En Progreso' }
+          ],
+          availability: '80%',
+          skills: ['React', 'JavaScript', 'Tailwind CSS']
+        },
+        {
+          id: 2,
+          name: 'María González',
+          role: 'Desarrollador Backend',
+          avatar: 'https://placehold.co/40x40/ef4444/ffffff?text=MG',
+          projects: [
+            { projectId: 1, projectName: 'Proyecto Efecty', hours: 20, tasks: ['API REST', 'Integración con base de datos'], status: 'En Progreso' },
+            { projectId: 2, projectName: 'Proyecto Aseguradora Solidaria', hours: 12, tasks: ['Análisis de requerimientos'], status: 'Planeación' }
+          ],
+          availability: '60%',
+          skills: ['Node.js', 'Python', 'PostgreSQL']
+        },
+        {
+          id: 3,
+          name: 'Andrés Martínez',
+          role: 'Diseñador UX/UI',
+          avatar: 'https://placehold.co/40x40/10b981/ffffff?text=AM',
+          projects: [
+            { projectId: 2, projectName: 'Proyecto Aseguradora Solidaria', hours: 16, tasks: ['Diseño de wireframes', 'Prototipado'], status: 'Planeación' }
+          ],
+          availability: '90%',
+          skills: ['Figma', 'Adobe XD', 'User Research']
+        },
+        {
+          id: 4,
+          name: 'Laura Pérez',
+          role: 'Project Manager',
+          avatar: 'https://placehold.co/40x40/f59e0b/ffffff?text=LP',
+          projects: [
+            { projectId: 1, projectName: 'Proyecto Efecty', hours: 8, tasks: ['Coordinación del equipo', 'Gestión de riesgos'], status: 'En Progreso' },
+            { projectId: 2, projectName: 'Proyecto Aseguradora Solidaria', hours: 12, tasks: ['Gestión de stakeholders', 'Planificación'], status: 'Planeación' }
+          ],
+          availability: '70%',
+          skills: ['Scrum', 'Kanban', 'JIRA']
+        },
+        {
+          id: 5,
+          name: 'Javier Torres',
+          role: 'DevOps Engine
